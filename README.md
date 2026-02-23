@@ -165,17 +165,16 @@ docker ps
 ```
 
 Test connexion SSH
-
 ```bash
 ssh -p 2222 root@localhost
 ```
 
 Mot de passe:
-
+```bash
 root123
+```
 
 Stop / Remove
-
 ```bash
 docker stop ssh-test
 docker rm ssh-test
