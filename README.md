@@ -194,7 +194,7 @@ nano ~/.bashrc
 Ajout en fin de fichier :
 
 ```bash
-# ---- Docker aliases (Job 05) ----
+# ---- Docker aliases ----
 alias d='docker'
 alias dps='docker ps'
 alias dpsa='docker ps -a'
