@@ -83,7 +83,7 @@ docker exec -it <container_id> bash
 
 Recréer un conteneur équivalent à hello-world en utilisant une image Debian minimale.
 
----
+--
 
 Dockerfile
 
@@ -96,12 +96,12 @@ RUN apt-get update \
 
 CMD ["/bin/sh","-lc","echo 'Hello from my custom Docker container!' && cowsay 'Docker Job 03 - Alexandre'"]
 
----
+--
 
 Build Image
 
 ```bash
-docker build --no-cache -t my-hello
+docker build --no-cache -t my-hello .
 ```
 Lancement conteneur
 
@@ -120,3 +120,71 @@ Résultat :
             (__)\       )\/\
                 ||----w |
                 ||     ||"
+
+---
+
+# ✅ Job 04 — Image SSH personnalisée
+
+## 🎯 Objectif
+
+Créer une image Debian avec serveur SSH :
+
+Accès root
+
+Mot de passe : root123
+
+Port SSH différent de 22
+
+Sans utiliser d’image SSH existante
+
+--
+
+Dockerfile
+```bash
+FROM debian:stable-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssh-server \
+ && mkdir -p /run/sshd \
+ && echo "root:root123" | chpasswd \
+ && sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config \
+ && sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication yes/' /etc/ssh/sshd_config \
+ && rm -rf /var/lib/apt/lists/*
+
+EXPOSE 2222
+CMD ["/usr/sbin/sshd","-D","-p","2222"]
+```
+-
+
+Build
+```bash
+docker build -t my-ssh .
+```
+-
+
+Run
+```bash
+docker run -d --name ssh-test -p 2222:2222 my-ssh
+docker ps
+```
+-
+
+Test connexion SSH
+
+```bash
+ssh -p 2222 root@localhost
+```
+-
+
+Mot de passe:
+
+root123
+-
+
+Stop / Remove
+
+```bash
+docker stop ssh-test
+docker rm ssh-test
+```
+-
