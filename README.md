@@ -181,3 +181,29 @@ Stop / Remove
 docker stop ssh-test
 docker rm ssh-test
 ```
+
+---
+
+# ✅ Job 05 — Alias Docker dans ~/.bashrc
+
+## Ajout des alias
+
+```bash
+nano ~/.bashrc
+```
+Ajout en fin de fichier :
+
+# ---- Docker aliases (Job 05) ----
+alias d='docker'
+alias dps='docker ps'
+alias dpsa='docker ps -a'
+alias di='docker images'
+alias dr='docker run'
+alias dri='docker run -it --rm'
+alias dst='docker stop'
+alias drm='docker rm'
+alias drmi='docker rmi'
+alias dlog='docker logs'
+alias dex='docker exec -it'
+alias dprune='docker system prune -af'
+# -------------------------------
