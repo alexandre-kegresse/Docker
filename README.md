@@ -137,8 +137,6 @@ Port SSH différent de 22
 
 Sans utiliser d’image SSH existante
 
---
-
 Dockerfile
 ```bash
 FROM debian:stable-slim
@@ -154,32 +152,27 @@ RUN apt-get update \
 EXPOSE 2222
 CMD ["/usr/sbin/sshd","-D","-p","2222"]
 ```
---
 
 Build
 ```bash
 docker build -t my-ssh .
 ```
---
 
 Run
 ```bash
 docker run -d --name ssh-test -p 2222:2222 my-ssh
 docker ps
 ```
---
 
 Test connexion SSH
 
 ```bash
 ssh -p 2222 root@localhost
 ```
---
 
 Mot de passe:
 
 root123
---
 
 Stop / Remove
 
@@ -187,4 +180,3 @@ Stop / Remove
 docker stop ssh-test
 docker rm ssh-test
 ```
---
