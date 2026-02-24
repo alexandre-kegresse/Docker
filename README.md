@@ -1,46 +1,39 @@
-# Docker
-# 🐳 Projet Docker — La Plateforme
+# 👨‍💻 Projet Docker — La Plateforme
 
-## 🎯 Objectif
+## 📌 Objectif
 
-Mettre en place un environnement Docker complet sous Debian (console uniquement), puis créer des images personnalisées via Dockerfile.
-
----
-
-# 🖥️ Environnement
-
-- VM Debian 13 (mode console)
-- 1 vCPU
-- 1 Go RAM
-- 8 Go disque
-- Installation Docker via dépôt officiel
+Installer et utiliser Docker sur Debian, puis apprendre à créer des images personnalisées, utiliser Docker Compose, et orchestrer des services.
 
 ---
 
-# ✅ Job 01 — Installation Docker (CLI)
+## 🖥️ Environnement
 
-## Mise à jour système
+- VM Debian 13 (console)
+- 1 vCPU | 1 Go RAM | 8 Go disque
+- Installation de Docker via dépôt officiel
+
+---
+
+# 🚀 Job 01 — Installation Docker (CLI)
+
+## Mise à jour & installation
 
 ```bash
 apt update
 apt install -y ca-certificates curl gnupg lsb-release
 
-Ajout clé GPG Docker
-
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg \
+  | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 chmod a+r /etc/apt/keyrings/docker.gpg
 
-Ajout dépôt Docker
-
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(. /etc/os-release && echo $VERSION_CODENAME) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-Installation Docker
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/debian $(. /etc/os-release && echo $VERSION_CODENAME) stable" \
+  | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 apt update
 apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-Activation du service
 
 systemctl enable --now docker
 systemctl status docker --no-pager
@@ -49,18 +42,15 @@ docker --version
 
 ---
 
-# ✅ Job 02 — Test hello-world
-## Test fonctionnement
+# 🧪 Job 02 — Test hello-world
+
+## Test
 
 ```bash
 docker run hello-world
 ```
 
-Résultat attendu :
-" Hello from Docker!
-This message shows that your installation appears to be working correctly. "
-
-Commandes essentielles Docker
+## Commandes essentielles
 
 ```bash
 docker ps
@@ -68,25 +58,24 @@ docker ps -a
 docker images
 docker pull debian:stable-slim
 docker run -it debian:stable-slim bash
-docker stop <container_id>
-docker rm <container_id>
-docker rmi <image_id>
-docker logs <container_id>
-docker exec -it <container_id> bash
+docker stop <container>
+docker rm <container>
+docker rmi <image>
+docker logs <container>
+docker exec -it <container> bash
 ```
 
 ---
 
-# ✅ Job 03 — Dockerfile personnalisé (Hello World)
+# 🐳 Job 03 — Dockerfile personnalisé (Hello World)
 
-## 🎯 Objectif
+## Objectif
 
-Recréer un conteneur équivalent à hello-world en utilisant une image Debian minimale.
+Créer une image personnalisée équivalente à hello-world en utilisant Debian minimale.
 
---
+## Dockerfile
 
-Dockerfile
-
+```dockerfile
 FROM debian:stable-slim
 
 RUN apt-get update \
@@ -95,51 +84,21 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 CMD ["/bin/sh","-lc","echo 'Hello from my custom Docker container!' && cowsay 'Docker Job 03 - Alexandre'"]
+```
 
---
-
-Build Image
+## Build & Run
 
 ```bash
 docker build --no-cache -t my-hello .
-```
-Lancement conteneur
-
-```bash
 docker run --rm my-hello
 ```
 
-Résultat :
-
-"Hello from my custom Docker container!
- ______________________
-< Docker Job 03 - Alexandre >
- ----------------------
-        \   ^__^
-         \  (oo)\_______
-            (__)\       )\/\
-                ||----w |
-                ||     ||"
-
 ---
 
-# ✅ Job 04 — Image SSH personnalisée
+# 🛠️ Job 04 — Image SSH personnalisée
 
-## 🎯 Objectif
+## Dockerfile SSH
 
-Créer une image Debian avec serveur SSH :
-
-Accès root
-
-Mot de passe : root123
-
-Port SSH différent de 22
-
-Sans utiliser d’image SSH existante
-
-#
-
-Dockerfile
 ```bash
 FROM debian:stable-slim
 
@@ -155,28 +114,22 @@ EXPOSE 2222
 CMD ["/usr/sbin/sshd","-D","-p","2222"]
 ```
 
-Build
+## Build & Test
+
 ```bash
 docker build -t my-ssh .
-```
-
-Run
-```bash
 docker run -d --name ssh-test -p 2222:2222 my-ssh
-docker ps
 ```
 
-Test connexion SSH
+Test SSH :
+
 ```bash
 ssh -p 2222 root@localhost
+# Mot de passe : root123
 ```
 
-Mot de passe:
-```bash
-root123
-```
+Stop & Cleanup :
 
-Stop / Remove
 ```bash
 docker stop ssh-test
 docker rm ssh-test
@@ -184,14 +137,13 @@ docker rm ssh-test
 
 ---
 
-# ✅ Job 05 — Alias Docker dans ~/.bashrc
-
-## Ajout des alias
+# 🧠 Job 05 — Alias Docker dans ~/.bashrc
 
 ```bash
 nano ~/.bashrc
 ```
-Ajout en fin de fichier :
+
+Ajout :
 
 ```bash
 # ---- Docker aliases ----
@@ -210,70 +162,58 @@ alias dprune='docker system prune -af'
 # -------------------------------
 ```
 
-# ✅ Job 06 — Volumes Docker
+---
+
+# 📦 Job 06 — Volumes Docker
 
 ## 1️⃣ Bind Mount
-
-Création dossier local :
 
 ```bash
 mkdir ~/volume-test
 echo "Bonjour depuis l'hôte Debian" > ~/volume-test/index.html
-```
-Lancement nginx avec bind mount :
-```bash
-docker run -d --name nginx-bind -p 8080:80 -v ~/volume-test:/usr/share/nginx/html nginx
-```
-Test :
-```bash
+
+docker run -d --name nginx-bind -p 8080:80 \
+  -v ~/volume-test:/usr/share/nginx/html nginx
+
 curl http://localhost:8080
 ```
+
 ## 2️⃣ Volume nommé
 
-Création :
 ```bash
 docker volume create myvolume
-```
-Utilisation :
-```bash
-docker run -d --name nginx-volume -p 8081:80 -v myvolume:/usr/share/nginx/html nginx
-```
-Inspection :
-```bash
+
+docker run -d --name nginx-volume -p 8081:80 \
+  -v myvolume:/usr/share/nginx/html nginx
+
 docker volume inspect myvolume
 ```
+
 ## 3️⃣ Partage entre conteneurs
 
-Écriture dans le volume :
 ```bash
 docker run -it --rm -v myvolume:/data debian:stable-slim bash
 echo "Fichier écrit depuis un autre conteneur" > /data/test.txt
 exit
-```
-Lecture via nginx :
-```bash
+
 curl http://localhost:8081/test.txt
 ```
 
-# ✅ Job 07 – Docker Compose (Nginx + FTP + Volume partagé)
-
-## 🎯 Objectif
-
-Mettre en place une infrastructure Docker composée de :
-
-- Un serveur **Nginx**
-- Un serveur **FTP**
-- Un **volume partagé**
-- Upload d’un fichier via FTP visible sur Nginx
-
 ---
 
-📁 Structure du projet
-```bash
-mkdir job07
-cd job07
-```
-📝 docker-compose.yml
+# 📁 Job 07 — Docker Compose (Nginx + FTP + Volume)
+
+## Objectif
+
+Créer une stack avec :
+
+- Nginx
+- FTP
+- Volume partagé
+- Upload via FTP visible sur Nginx
+
+## docker-compose.yml
+
 ```bash
 version: '3.8'
 
@@ -297,7 +237,7 @@ services:
     environment:
       - FTP_USER=alex
       - FTP_PASS=alex123
-      - PASV_ADDRESS=192.168.X.X   # IP de la VM
+      - PASV_ADDRESS=192.168.X.X
       - PASV_MIN_PORT=21100
       - PASV_MAX_PORT=21110
     volumes:
@@ -307,99 +247,48 @@ services:
 volumes:
   webdata:
 ```
-🚀 Lancement des services
+
+## Lancement
+
 ```bash
 docker compose up -d
-```
-Vérification :
-```bash
 docker ps
 ```
-🌐 Test Nginx
 
-Navigateur :
-```bash
+## Test Nginx
+
+```
 http://IP_DE_LA_VM:8080
 ```
-📂 Test FTP (FileZilla)
 
-Hôte : IP_DE_LA_VM
+## Test FTP (FileZilla)
 
-Port : 21
+- Hôte : IP_DE_LA_VM
+- Port : 21
+- Utilisateur : alex
+- Mot de passe : alex123
+- Mode : Passif
 
-Utilisateur : alex
+## Résultat
 
-Mot de passe : alex123
-
-Mode : Passif
-
-🧪 Test final
-
-- Créer un fichier index.html
-
-- Upload via FTP
-
-- Rafraîchir le navigateur
-
-- Le fichier est visible via Nginx
-
-🧠 Notions apprises
-
-- Docker Compose
-
-- Multi-containers
-
-- Volume nommé partagé
-
-- Mode passif FTP
-
-- Orchestration de services
-
-🛠 Commandes utiles
-
-Arrêter les containers :
-```bash
-docker compose down
-```
-Voir les logs :
-```bash
-docker logs ftp_server
-docker logs nginx_server
-```
-✅ Résultat
-
-Infrastructure fonctionnelle permettant :
-
-- Upload de fichiers via FTP
-
-- Hébergement automatique via Nginx
-
-- Partage de données via volume Docker
-
-# ✅ Job 08 — Création d'une image Docker personnalisée
-
-## 🎯 Objectif
-
-Créer une image Docker personnalisée basée sur Nginx contenant un fichier index.html intégré directement dans l’image.
+Upload via FTP → visible sur Nginx.
 
 ---
 
-## 📁 Création du dossier projet
+# 📦 Job 08 — Image Docker personnalisée
+
+## Objectif
+
+Créer une image Docker avec Nginx qui embarque un index.html personnalisé.
+
+## Création
 
 ```bash
 mkdir job08
 cd job08
 ```
 
----
-
-## 📄 Création du fichier index.html
-
-```bash
-nano index.html
-```
-
-Contenu :
+### index.html
 
 ```html
 <!DOCTYPE html>
@@ -414,72 +303,33 @@ Contenu :
 </html>
 ```
 
----
-
-## 🐳 Création du Dockerfile
-
-```bash
-nano Dockerfile
-```
-
-Contenu :
+### Dockerfile
 
 ```dockerfile
 FROM nginx:latest
-
 COPY index.html /usr/share/nginx/html/index.html
-
 EXPOSE 80
 ```
 
----
-
-## 🏗️ Build de l’image
+## Build & Run
 
 ```bash
 docker build -t alex-nginx .
-```
-
-Vérification :
-
-```bash
-docker images
-```
-
----
-
-## 🚀 Lancement du container
-
-```bash
 docker run -d -p 8081:80 --name job08 alex-nginx
 ```
 
----
+## Test
 
-## 🌐 Test
-
-Dans le navigateur :
-
+```
 http://IP_DE_LA_VM:8081
+```
 
----
-
-## 🛑 Commandes utiles
-
-Arrêter le container :
+## Commandes utiles
 
 ```bash
 docker stop job08
-```
-
-Supprimer le container :
-
-```bash
 docker rm job08
-```
-
-Supprimer l’image :
-
-```bash
 docker rmi alex-nginx
 ```
+
+---
