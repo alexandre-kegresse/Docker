@@ -333,3 +333,112 @@ docker rmi alex-nginx
 ```
 
 ---
+# 🌐 Job 09 — Docker Network personnalisé
+
+## 🎯 Objectif
+
+Comprendre et manipuler les réseaux Docker :
+
+- Créer un réseau personnalisé
+- Connecter plusieurs containers
+- Tester la communication entre containers
+- Vérifier l’isolation réseau
+
+---
+
+## 🧠 Voir les réseaux existants
+
+```bash
+docker network ls
+```
+
+Réseaux par défaut :
+
+- bridge
+- host
+- none
+
+---
+
+## 🌐 Création d’un réseau personnalisé
+
+```bash
+docker network create my-network
+```
+
+Vérification :
+
+```bash
+docker network ls
+```
+
+Inspection détaillée :
+
+```bash
+docker network inspect my-network
+```
+
+---
+
+## 🐳 Lancer deux containers dans le même réseau
+
+```bash
+docker run -dit --name container1 --network my-network debian:stable-slim bash
+docker run -dit --name container2 --network my-network debian:stable-slim bash
+```
+
+---
+
+## 🔎 Test de communication
+
+Entrer dans container1 :
+
+```bash
+docker exec -it container1 bash
+```
+
+Installer ping :
+
+```bash
+apt update
+apt install -y iputils-ping
+```
+
+Tester la connexion vers container2 :
+
+```bash
+ping container2
+```
+
+Résultat : ✅ communication fonctionnelle  
+Docker fournit une résolution DNS automatique par nom de container.
+
+---
+
+## 🚫 Test d’isolation réseau
+
+Créer un container hors réseau personnalisé :
+
+```bash
+docker run -dit --name container3 debian:stable-slim bash
+```
+
+Depuis container1 :
+
+```bash
+ping container3
+```
+
+Résultat : ❌ échec  
+Le container3 n’est pas dans le réseau my-network.
+
+---
+
+## 🛑 Nettoyage
+
+```bash
+docker rm -f container1 container2 container3
+docker network rm my-network
+```
+
+---
