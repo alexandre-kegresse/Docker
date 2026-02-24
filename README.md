@@ -209,3 +209,48 @@ alias dex='docker exec -it'
 alias dprune='docker system prune -af'
 # -------------------------------
 ```
+
+# ✅ Job 06 — Volumes Docker
+
+## 1️⃣ Bind Mount
+
+Création dossier local :
+
+```bash
+mkdir ~/volume-test
+echo "Bonjour depuis l'hôte Debian" > ~/volume-test/index.html
+```
+Lancement nginx avec bind mount :
+```bash
+docker run -d --name nginx-bind -p 8080:80 -v ~/volume-test:/usr/share/nginx/html nginx
+```
+Test :
+```bash
+curl http://localhost:8080
+```
+2️⃣ Volume nommé
+
+Création :
+```bash
+docker volume create myvolume
+```
+Utilisation :
+```bash
+docker run -d --name nginx-volume -p 8081:80 -v myvolume:/usr/share/nginx/html nginx
+```
+Inspection :
+```bash
+docker volume inspect myvolume
+```
+3️⃣ Partage entre conteneurs
+
+Écriture dans le volume :
+```bash
+docker run -it --rm -v myvolume:/data debian:stable-slim bash
+echo "Fichier écrit depuis un autre conteneur" > /data/test.txt
+exit
+```
+Lecture via nginx :
+```bash
+curl http://localhost:8081/test.txt
+```
