@@ -268,26 +268,6 @@ Mettre en place une infrastructure Docker composée de :
 
 ---
 
-## 🏗️ Architecture
-
-Client (FileZilla / Navigateur)
-        ↓
-    Docker Host (Debian)
-        ↓
- ┌─────────────────────────┐
- │        Docker           │
- │                         │
- │  ┌──────────┐          │
- │  │  NGINX   │          │
- │  │  Port 80 │          │
- │  └─────┬────┘          │
- │        │ Volume        │
- │  ┌─────▼────┐          │
- │  │   FTP    │          │
- │  │  Port 21 │          │
- │  └──────────┘          │
- └─────────────────────────┘
-
 📁 Structure du projet
 ```bash
 mkdir job07
@@ -354,25 +334,25 @@ Mode : Passif
 
 🧪 Test final
 
-Créer un fichier index.html
+- Créer un fichier index.html
 
-Upload via FTP
+- Upload via FTP
 
-Rafraîchir le navigateur
+- Rafraîchir le navigateur
 
-Le fichier est visible via Nginx
+- Le fichier est visible via Nginx
 
 🧠 Notions apprises
 
-Docker Compose
+- Docker Compose
 
-Multi-containers
+- Multi-containers
 
-Volume nommé partagé
+- Volume nommé partagé
 
-Mode passif FTP
+- Mode passif FTP
 
-Orchestration de services
+- Orchestration de services
 
 🛠 Commandes utiles
 
@@ -389,8 +369,8 @@ docker logs nginx_server
 
 Infrastructure fonctionnelle permettant :
 
-Upload de fichiers via FTP
+- Upload de fichiers via FTP
 
-Hébergement automatique via Nginx
+- Hébergement automatique via Nginx
 
-Partage de données via volume Docker
+- Partage de données via volume Docker
