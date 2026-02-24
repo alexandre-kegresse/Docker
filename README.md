@@ -723,3 +723,164 @@ docker volume rm job11_dbdata
 ```
 
 ---
+
+# 🌍 Job 12 — WordPress + MySQL avec Docker Compose
+
+## 🎯 Objectif
+
+Déployer une application web complète avec :
+
+- MySQL 8.0
+- WordPress
+- Réseau personnalisé
+- Volumes pour persistance
+- Communication inter-container
+
+Architecture 2 tiers : Application + Base de données.
+
+---
+
+## 📁 Création du dossier
+
+```bash
+mkdir job12
+cd job12
+```
+
+---
+
+## 📝 Création du docker-compose.yml
+
+```bash
+nano docker-compose.yml
+```
+
+Contenu :
+
+```yaml
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: wordpress_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: alex
+      MYSQL_PASSWORD: alex123
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - wp-network
+
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress_app
+    restart: always
+    ports:
+      - "8084:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: alex
+      WORDPRESS_DB_PASSWORD: alex123
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wpdata:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - wp-network
+
+volumes:
+  dbdata:
+  wpdata:
+
+networks:
+  wp-network:
+```
+
+---
+
+## 🚀 Lancement de la stack
+
+```bash
+docker compose up -d
+```
+
+Vérification :
+
+```bash
+docker ps
+```
+
+---
+
+## 🌐 Accès à WordPress
+
+Navigateur :
+
+```
+http://IP_DE_LA_VM:8084
+```
+
+Suivre l’installation :
+
+- Choisir la langue
+- Nom du site
+- Créer un utilisateur admin
+- Définir un mot de passe
+
+---
+
+## ⚠️ Important (premier démarrage)
+
+Au premier lancement, MySQL peut mettre quelques secondes à s’initialiser.  
+Si l’erreur suivante apparaît :
+
+```
+Error establishing a database connection
+```
+
+Attendre 20 à 60 secondes puis rafraîchir la page.
+
+Vérification possible :
+
+```bash
+docker logs wordpress_db --tail 20
+```
+
+Attendre le message :
+
+```
+ready for connections
+```
+
+---
+
+## 🧪 Test de persistance
+
+1. Créer un article
+2. Arrêter la stack :
+
+```bash
+docker compose down
+```
+
+3. Relancer :
+
+```bash
+docker compose up -d
+```
+
+Le site et les données sont conservés grâce aux volumes.
+
+---
+
+## 🛑 Nettoyage
+
+```bash
+docker compose down -v
+```
+
+---
