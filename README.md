@@ -333,6 +333,7 @@ docker rmi alex-nginx
 ```
 
 ---
+
 # 🌐 Job 09 — Docker Network personnalisé
 
 ## 🎯 Objectif
@@ -439,6 +440,139 @@ Le container3 n’est pas dans le réseau my-network.
 ```bash
 docker rm -f container1 container2 container3
 docker network rm my-network
+```
+
+---
+
+# 🗄️ Job 10 — Stack MySQL + phpMyAdmin avec Docker Compose
+
+## 🎯 Objectif
+
+Mettre en place une stack complète avec :
+
+- MySQL 8.0
+- phpMyAdmin
+- Réseau personnalisé
+- Volume pour persistance des données
+- Variables d’environnement
+
+Comprendre la communication entre services via Docker Compose.
+
+---
+
+## 📁 Création du dossier projet
+
+```bash
+mkdir job10
+cd job10
+```
+
+---
+
+## 📝 Création du docker-compose.yml
+
+```bash
+nano docker-compose.yml
+```
+
+Contenu :
+
+```yaml
+version: '3.8'
+
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_server
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: alex
+      MYSQL_PASSWORD: alex123
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - my-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_server
+    restart: always
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root123
+    networks:
+      - my-network
+
+volumes:
+  dbdata:
+
+networks:
+  my-network:
+```
+
+---
+
+## 🚀 Lancement de la stack
+
+```bash
+docker compose up -d
+```
+
+Vérification :
+
+```bash
+docker ps
+```
+
+---
+
+## 🌐 Accès à phpMyAdmin
+
+Dans le navigateur :
+
+```
+http://IP_DE_LA_VM:8082
+```
+
+Connexion possible avec :
+
+Utilisateur root  
+Mot de passe : root123  
+
+OU  
+
+Utilisateur : alex  
+Mot de passe : alex123  
+
+---
+
+## 🧪 Test
+
+- Vérifier que la base `testdb` existe
+- Créer une table
+- Insérer des données
+- Redémarrer les containers
+- Vérifier que les données persistent (grâce au volume)
+
+---
+
+## 🛑 Arrêt et nettoyage
+
+Arrêter la stack :
+
+```bash
+docker compose down
+```
+
+Supprimer le volume :
+
+```bash
+docker volume rm job10_dbdata
 ```
 
 ---
