@@ -333,3 +333,152 @@ docker rmi alex-nginx
 ```
 
 ---
+
+# 📦 Job 09 — Docker Registry Local + UI
+
+## 🎯 Objectif
+
+Mettre en place :
+
+- Un Docker Registry local
+- Une interface Web (Docker Registry UI)
+- Stockage persistant via volume
+- Push d’une image dans le registry
+- Vérification du catalogue
+
+---
+
+## 📁 Création du dossier
+
+```bash
+mkdir job09
+cd job09
+```
+
+---
+
+## 📝 Création du docker-compose.yml
+
+```bash
+nano docker-compose.yml
+```
+
+Contenu :
+
+```yaml
+services:
+  registry:
+    image: registry:2
+    container_name: local_registry
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '["http://192.168.58.142:8089"]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Methods: '["HEAD","GET","OPTIONS"]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Credentials: '["true"]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Headers: '["Authorization","Accept"]'
+    volumes:
+      - registrydata:/var/lib/registry
+
+  ui:
+    image: joxit/docker-registry-ui:latest
+    container_name: registry_ui
+    restart: always
+    ports:
+      - "8089:80"
+    environment:
+      - SINGLE_REGISTRY=true
+      - REGISTRY_TITLE=Local Docker Registry
+      - REGISTRY_URL=http://registry:5000
+    depends_on:
+      - registry
+
+volumes:
+  registrydata:
+```
+
+⚠️ Adapter l’IP si nécessaire (ici : 192.168.58.142).
+
+---
+
+## 🚀 Lancement des services
+
+```bash
+docker compose up -d
+docker ps
+```
+
+---
+
+## 🌐 Accès à l’interface Web
+
+Navigateur :
+
+```
+http://IP_DE_LA_VM:8089
+```
+
+---
+
+## 📤 Push d’une image dans le registry
+
+Télécharger une image :
+
+```bash
+docker pull nginx:latest
+```
+
+Tag vers le registry local :
+
+```bash
+docker tag nginx:latest 127.0.0.1:5000/nginx:latest
+```
+
+Push vers le registry :
+
+```bash
+docker push 127.0.0.1:5000/nginx:latest
+```
+
+---
+
+## 🔎 Vérification du catalogue
+
+```bash
+curl http://127.0.0.1:5000/v2/_catalog
+```
+
+Résultat attendu :
+
+```json
+{"repositories":["nginx"]}
+```
+
+---
+
+## 📦 Vérification via UI
+
+Actualiser la page :
+
+```
+http://IP_DE_LA_VM:8089
+```
+
+Le repository `nginx` doit apparaître.
+
+---
+
+## 🛑 Arrêt et nettoyage
+
+```bash
+docker compose down
+```
+
+Supprimer les volumes :
+
+```bash
+docker compose down -v
+```
+
+---
