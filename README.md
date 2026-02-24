@@ -576,3 +576,150 @@ docker volume rm job10_dbdata
 ```
 
 ---
+
+# 🔐 Job 11 — Docker Compose avec fichier .env (sécurisation des variables)
+
+## 🎯 Objectif
+
+Utiliser un fichier `.env` pour stocker les variables sensibles (mots de passe, utilisateur, base de données) au lieu de les laisser en clair dans le docker-compose.yml.
+
+Mettre en place :
+
+- MySQL 8.0
+- phpMyAdmin
+- Variables externalisées
+- Réseau personnalisé
+- Volume pour persistance
+
+---
+
+## 📁 Création du dossier
+
+```bash
+mkdir job11
+cd job11
+```
+
+---
+
+## 🔐 Création du fichier .env
+
+```bash
+nano .env
+```
+
+Contenu :
+
+```bash
+MYSQL_ROOT_PASSWORD=root123
+MYSQL_DATABASE=testdb
+MYSQL_USER=alex
+MYSQL_PASSWORD=alex123
+PMA_PORT=8083
+```
+
+⚠️ En production, le fichier `.env` ne doit jamais être push sur GitHub.  
+Ajouter `.env` dans un fichier `.gitignore`.
+
+---
+
+## 📝 Création du docker-compose.yml
+
+```bash
+nano docker-compose.yml
+```
+
+Contenu :
+
+```yaml
+version: '3.8'
+
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_server_job11
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - my-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_server_job11
+    restart: always
+    ports:
+      - "${PMA_PORT}:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    networks:
+      - my-network
+
+volumes:
+  dbdata:
+
+networks:
+  my-network:
+```
+
+---
+
+## 🚀 Lancement de la stack
+
+```bash
+docker compose up -d
+```
+
+Vérification :
+
+```bash
+docker ps
+```
+
+---
+
+## 🌐 Accès à phpMyAdmin
+
+Navigateur :
+
+```
+http://IP_DE_LA_VM:8083
+```
+
+Connexion :
+
+Utilisateur : root  
+Mot de passe : root123  
+
+OU  
+
+Utilisateur : alex  
+Mot de passe : alex123  
+
+---
+
+## 🧪 Test
+
+- Vérifier que la base `testdb` existe
+- Créer une table
+- Insérer des données
+- Redémarrer les containers
+- Vérifier que les données persistent (grâce au volume)
+
+---
+
+## 🛑 Arrêt et nettoyage
+
+```bash
+docker compose down
+docker volume rm job11_dbdata
+```
+
+---
