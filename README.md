@@ -228,7 +228,7 @@ Test :
 ```bash
 curl http://localhost:8080
 ```
-2️⃣ Volume nommé
+## 2️⃣ Volume nommé
 
 Création :
 ```bash
@@ -242,7 +242,7 @@ Inspection :
 ```bash
 docker volume inspect myvolume
 ```
-3️⃣ Partage entre conteneurs
+## 3️⃣ Partage entre conteneurs
 
 Écriture dans le volume :
 ```bash
