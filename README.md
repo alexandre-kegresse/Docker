@@ -605,3 +605,149 @@ sudo ./install_docker.sh
 ```
 
 ---
+
+# 🖥️ Job 11 — Installation et utilisation de Portainer
+
+## 🎯 Objectif
+
+- Installer Portainer (interface Web de gestion Docker)
+- Se connecter à l’environnement Docker local
+- Refaire les Jobs 2 à 9 via l’interface graphique
+- Comprendre la différence entre CLI et GUI
+
+---
+
+# 📦 Installation de Portainer
+
+## Création du volume
+
+```bash
+docker volume create portainer_data
+```
+
+## Lancement du container Portainer
+
+```bash
+docker run -d \
+  -p 9000:9000 \
+  -p 9443:9443 \
+  --name portainer \
+  --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data \
+  portainer/portainer-ce:latest
+```
+
+## Vérification
+
+```bash
+docker ps
+```
+
+---
+
+# 🌐 Accès à l’interface
+
+Navigateur :
+
+```
+http://IP_DE_LA_VM:9000
+```
+
+(ou HTTPS via le port 9443)
+
+---
+
+# 🔐 Configuration initiale
+
+1. Créer un utilisateur administrateur
+2. Sélectionner l’environnement **Docker (local)**
+3. Se connecter à l’instance Docker
+
+---
+
+# 🔁 Reproduction des Jobs 2 à 9 via l’interface
+
+## ✔ Job 2 — Hello World
+- Menu **Containers**
+- Add container
+- Image : `hello-world`
+- Deploy
+
+---
+
+## ✔ Job 3 — Build d’image personnalisée
+- Menu **Images**
+- Build a new image
+- Coller le Dockerfile
+- Build
+
+---
+
+## ✔ Job 4 — Container SSH
+- Build image SSH
+- Exposer le port 2222
+- Deploy
+
+---
+
+## ✔ Job 5 — Gestion des containers
+- Stop
+- Restart
+- Remove
+
+---
+
+## ✔ Job 6 — Volumes
+- Menu **Volumes**
+- Add volume
+- Attacher au container
+
+---
+
+## ✔ Job 7 — Docker Compose
+- Menu **Stacks**
+- Add stack
+- Coller le docker-compose.yml
+- Deploy
+
+---
+
+## ✔ Job 8 — Image personnalisée
+- Build image
+- Déployer container
+
+---
+
+## ✔ Job 9 — Registry
+- Déployer registry via Stacks
+- Vérifier les images
+
+---
+
+# 🧠 Notions apprises
+
+- Installation Portainer
+- Gestion Docker via interface graphique
+- Différence CLI vs GUI
+- Déploiement de containers
+- Gestion images, volumes et networks
+- Déploiement via Docker Compose (Stacks)
+
+---
+
+# 🛑 Suppression Portainer
+
+```bash
+docker stop portainer
+docker rm portainer
+docker volume rm portainer_data
+```
+
+---
+
+## 👨‍💻 Auteur
+
+Alexandre Kegresse  
+Formation Administrateur d’Infrastructures Sécurisées  
+La Plateforme – Cannes
