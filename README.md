@@ -254,3 +254,143 @@ Lecture via nginx :
 ```bash
 curl http://localhost:8081/test.txt
 ```
+
+# ✅ Job 07 – Docker Compose (Nginx + FTP + Volume partagé)
+
+## 🎯 Objectif
+
+Mettre en place une infrastructure Docker composée de :
+
+- Un serveur **Nginx**
+- Un serveur **FTP**
+- Un **volume partagé**
+- Upload d’un fichier via FTP visible sur Nginx
+
+---
+
+## 🏗️ Architecture
+
+Client (FileZilla / Navigateur)
+        ↓
+    Docker Host (Debian)
+        ↓
+ ┌─────────────────────────┐
+ │        Docker           │
+ │                         │
+ │  ┌──────────┐          │
+ │  │  NGINX   │          │
+ │  │  Port 80 │          │
+ │  └─────┬────┘          │
+ │        │ Volume        │
+ │  ┌─────▼────┐          │
+ │  │   FTP    │          │
+ │  │  Port 21 │          │
+ │  └──────────┘          │
+ └─────────────────────────┘
+
+📁 Structure du projet
+```bash
+mkdir job07
+cd job07
+```
+📝 docker-compose.yml
+```bash
+version: '3.8'
+
+services:
+
+  web:
+    image: nginx:latest
+    container_name: nginx_server
+    ports:
+      - "8080:80"
+    volumes:
+      - webdata:/usr/share/nginx/html
+    restart: always
+
+  ftp:
+    image: fauria/vsftpd
+    container_name: ftp_server
+    ports:
+      - "21:21"
+      - "21100-21110:21100-21110"
+    environment:
+      - FTP_USER=alex
+      - FTP_PASS=alex123
+      - PASV_ADDRESS=192.168.X.X   # IP de la VM
+      - PASV_MIN_PORT=21100
+      - PASV_MAX_PORT=21110
+    volumes:
+      - webdata:/home/vsftpd/alex
+    restart: always
+
+volumes:
+  webdata:
+```
+🚀 Lancement des services
+```bash
+docker compose up -d
+```
+Vérification :
+```bash
+docker ps
+```
+🌐 Test Nginx
+
+Navigateur :
+
+http://IP_DE_LA_VM:8080
+📂 Test FTP (FileZilla)
+
+Hôte : IP_DE_LA_VM
+
+Port : 21
+
+Utilisateur : alex
+
+Mot de passe : alex123
+
+Mode : Passif
+
+🧪 Test final
+
+Créer un fichier index.html
+
+Upload via FTP
+
+Rafraîchir le navigateur
+
+Le fichier est visible via Nginx
+
+🧠 Notions apprises
+
+Docker Compose
+
+Multi-containers
+
+Volume nommé partagé
+
+Mode passif FTP
+
+Orchestration de services
+
+🛠 Commandes utiles
+
+Arrêter les containers :
+```bash
+docker compose down
+```
+Voir les logs :
+```bash
+docker logs ftp_server
+docker logs nginx_server
+```
+✅ Résultat
+
+Infrastructure fonctionnelle permettant :
+
+Upload de fichiers via FTP
+
+Hébergement automatique via Nginx
+
+Partage de données via volume Docker
