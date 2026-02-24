@@ -482,3 +482,126 @@ docker compose down -v
 ```
 
 ---
+
+# 🛠️ Job 10 — Scripts Bash (Désinstallation + Installation Docker)
+
+## 🎯 Objectif
+
+Créer deux scripts Bash :
+
+1. Script de suppression complète de Docker
+2. Script d’installation automatique de Docker
+
+Automatiser totalement la gestion de Docker sur Debian.
+
+---
+
+# 📜 Script 1 — Désinstallation complète Docker
+
+## Création du script
+
+```bash
+nano uninstall_docker.sh
+```
+
+Contenu :
+
+```bash
+#!/bin/bash
+
+echo "Stopping Docker service..."
+systemctl stop docker 2>/dev/null
+
+echo "Removing Docker containers..."
+docker rm -f $(docker ps -aq) 2>/dev/null
+
+echo "Removing Docker images..."
+docker rmi -f $(docker images -q) 2>/dev/null
+
+echo "Removing Docker volumes..."
+docker volume rm $(docker volume ls -q) 2>/dev/null
+
+echo "Removing Docker networks..."
+docker network rm $(docker network ls -q | grep -v "bridge\|host\|none") 2>/dev/null
+
+echo "Purging Docker packages..."
+apt purge -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 2>/dev/null
+
+echo "Removing Docker directories..."
+rm -rf /var/lib/docker
+rm -rf /var/lib/containerd
+rm -rf /etc/docker
+
+echo "Docker completely removed."
+```
+
+## Rendre exécutable
+
+```bash
+chmod +x uninstall_docker.sh
+```
+
+## Exécution
+
+```bash
+sudo ./uninstall_docker.sh
+```
+
+---
+
+# 📦 Script 2 — Installation automatique Docker
+
+## Création du script
+
+```bash
+nano install_docker.sh
+```
+
+Contenu :
+
+```bash
+#!/bin/bash
+
+echo "Updating system..."
+apt update
+
+echo "Installing dependencies..."
+apt install -y ca-certificates curl gnupg lsb-release
+
+echo "Adding Docker GPG key..."
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg \
+  | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo "Adding Docker repository..."
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/debian $(. /etc/os-release && echo $VERSION_CODENAME) stable" \
+  | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+echo "Installing Docker..."
+apt update
+apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+echo "Enabling Docker service..."
+systemctl enable --now docker
+
+echo "Docker installation completed."
+docker --version
+```
+
+## Rendre exécutable
+
+```bash
+chmod +x install_docker.sh
+```
+
+## Exécution
+
+```bash
+sudo ./install_docker.sh
+```
+
+---
