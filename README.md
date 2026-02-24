@@ -318,8 +318,9 @@ docker ps
 🌐 Test Nginx
 
 Navigateur :
-
+```bash
 http://IP_DE_LA_VM:8080
+```
 📂 Test FTP (FileZilla)
 
 Hôte : IP_DE_LA_VM
