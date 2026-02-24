@@ -375,3 +375,111 @@ Infrastructure fonctionnelle permettant :
 - Hébergement automatique via Nginx
 
 - Partage de données via volume Docker
+
+# ✅ Job 08 — Création d'une image Docker personnalisée
+
+## 🎯 Objectif
+
+Créer une image Docker personnalisée basée sur Nginx contenant un fichier index.html intégré directement dans l’image.
+
+---
+
+## 📁 Création du dossier projet
+
+```bash
+mkdir job08
+cd job08
+```
+
+---
+
+## 📄 Création du fichier index.html
+
+```bash
+nano index.html
+```
+
+Contenu :
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Job 08</title>
+</head>
+<body style="background:black;color:lime;text-align:center;padding-top:100px;">
+    <h1>🔥 Job 08 Docker Image Custom</h1>
+    <p>Image créée par Alex</p>
+</body>
+</html>
+```
+
+---
+
+## 🐳 Création du Dockerfile
+
+```bash
+nano Dockerfile
+```
+
+Contenu :
+
+```dockerfile
+FROM nginx:latest
+
+COPY index.html /usr/share/nginx/html/index.html
+
+EXPOSE 80
+```
+
+---
+
+## 🏗️ Build de l’image
+
+```bash
+docker build -t alex-nginx .
+```
+
+Vérification :
+
+```bash
+docker images
+```
+
+---
+
+## 🚀 Lancement du container
+
+```bash
+docker run -d -p 8081:80 --name job08 alex-nginx
+```
+
+---
+
+## 🌐 Test
+
+Dans le navigateur :
+
+http://IP_DE_LA_VM:8081
+
+---
+
+## 🛑 Commandes utiles
+
+Arrêter le container :
+
+```bash
+docker stop job08
+```
+
+Supprimer le container :
+
+```bash
+docker rm job08
+```
+
+Supprimer l’image :
+
+```bash
+docker rmi alex-nginx
+```
