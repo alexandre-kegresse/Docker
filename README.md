@@ -746,6 +746,276 @@ docker volume rm portainer_data
 
 ---
 
+## Job XX — Pour aller plus loin : Stack type XAMPP (Nginx + PHP + MariaDB + phpMyAdmin + FTP)
+
+### 🎯 Objectif
+Reproduire un environnement type **XAMPP** avec Docker :
+- **Nginx** (web)
+- **PHP-FPM** (PHP)
+- **MariaDB** (DB)
+- **phpMyAdmin** (admin DB)
+- **FTP** (upload)
+- **1 volume partagé** pour les fichiers web (servis par Nginx + exécutés par PHP + upload via FTP)
+- **1 volume DB** pour persister les données MariaDB
+
+---
+
+### 📁 Arborescence
+```bash
+jobXX-xampp-docker/
+├─ docker-compose.yml
+├─ .env               # ❌ ne pas push
+├─ .gitignore
+├─ php/
+│  └─ Dockerfile
+├─ nginx/
+│  └─ default.conf
+└─ app/
+   └─ index.php
+```
+
+⚠️ Sécurité (.env)
+
+Le fichier .env contient des identifiants → ne jamais le push sur GitHub.
+
+```bash
+echo ".env" >> .gitignore
+```
+
+🧱 1) Fichier .env
+
+Créer le fichier suivant :
+
+```bash
+MYSQL_DATABASE=appdb
+MYSQL_USER=alex
+MYSQL_PASSWORD=alex123
+MYSQL_ROOT_PASSWORD=root123
+
+FTP_USER=alex
+FTP_PASS=alex123
+FTP_PASV_MIN=21100
+FTP_PASV_MAX=21110
+🐘 2) Dockerfile PHP (php/Dockerfile)
+FROM php:8.2-fpm-bookworm
+
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+ && docker-php-ext-install pdo_mysql mysqli \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /var/www/html
+```
+
+🌐 3) Configuration Nginx (nginx/default.conf)
+
+```bash
+server {
+    listen 80;
+    server_name localhost;
+
+    root /var/www/html;
+    index index.php index.html;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastfastcgi_script_name;
+    }
+}
+```
+
+✅ Remarque : fastcgi_pass php:9000 pointe vers le service php du docker-compose.
+
+✅ 4) Page de test PHP + DB (app/index.php)
+
+```bash
+<?php
+echo "<h1>✅ OK : Nginx + PHP</h1>";
+
+$host = "db";
+$db   = getenv("MYSQL_DATABASE") ?: "appdb";
+$user = getenv("MYSQL_USER") ?: "alex";
+$pass = getenv("MYSQL_PASSWORD") ?: "alex123";
+
+try {
+  $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
+  echo "<p>✅ Connexion DB OK</p>";
+  echo "<p>Version DB: " . $pdo->query("SELECT VERSION()")->fetchColumn() . "</p>";
+} catch (Exception $e) {
+  echo "<p>❌ DB KO: " . htmlspecialchars($e->getMessage()) . "</p>";
+}
+```
+
+🧩 5) Docker Compose (docker-compose.yml)
+
+```bash
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: xampp_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - web_data:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+    networks:
+      - xnet
+
+  php:
+    build: ./php
+    container_name: xampp_php
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - web_data:/var/www/html
+    networks:
+      - xnet
+
+  db:
+    image: mariadb:11
+    container_name: xampp_db
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - xnet
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: xampp_phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - db
+    networks:
+      - xnet
+
+  ftp:
+    image: fauria/vsftpd
+    container_name: xampp_ftp
+    ports:
+      - "2121:21"
+      - "${FTP_PASV_MIN}-${FTP_PASV_MAX}:${FTP_PASV_MIN}-${FTP_PASV_MAX}"
+    environment:
+      FTP_USER: ${FTP_USER}
+      FTP_PASS: ${FTP_PASS}
+      PASV_ADDRESS: 127.0.0.1
+      PASV_MIN_PORT: ${FTP_PASV_MIN}
+      PASV_MAX_PORT: ${FTP_PASV_MAX}
+      LOCAL_UMASK: "022"
+    volumes:
+      - web_data:/home/vsftpd
+    networks:
+      - xnet
+
+networks:
+  xnet:
+
+volumes:
+  web_data:
+  db_data:
+```
+
+✅ Ici, web_data est le volume partagé entre Nginx + PHP + FTP.
+
+🚀 6) Lancement
+```bash
+docker compose up -d --build
+docker compose ps
+```
+📦 7) Copier le fichier web dans le volume partagé
+
+Comme web_data est un volume Docker (pas un dossier local), on injecte index.php dedans :
+```bash
+docker run --rm \
+  -v xampp-docker_web_data:/data \
+  -v "$(pwd)/app:/src" \
+  alpine sh -c "cp /src/index.php /data/index.php"
+```
+Si le nom du volume diffère :
+```bash
+docker volume ls
+```
+✅ 8) Tests
+🌐 Test web PHP
+
+Ouvrir :
+```bash
+http://localhost:8080
+```
+Résultat attendu :
+
+✅ OK : Nginx + PHP
+
+✅ Connexion DB OK
+
+🛠 Test phpMyAdmin
+
+Ouvrir :
+```bash
+http://localhost:8081
+```
+Connexion :
+
+Serveur : db
+
+User : alex
+
+MDP : alex123
+
+📂 Test FTP (FileZilla)
+
+Hôte : 127.0.0.1
+
+Port : 2121
+
+User : alex
+
+Pass : alex123
+
+Uploader un fichier (ex: index.html) puis vérifier :
+```bash
+http://localhost:8080/index.html
+```
+🛠 Commandes utiles
+```bash
+docker compose logs -f --tail=100
+docker compose down
+docker compose down -v   # ⚠️ supprime aussi les volumes (web + db)
+```
+🔧 Fix DNS (si apt-get update échoue dans le build)
+
+Symptôme : Temporary failure resolving 'deb.debian.org'
+
+✅ Solution : forcer des DNS dans Docker
+```bash
+sudo nano /etc/docker/daemon.json
+{
+  "dns": ["8.8.8.8", "1.1.1.1"]
+}
+sudo systemctl restart docker
+docker run --rm alpine ping -c 2 deb.debian.org
+```
+---
+
 ## 👨‍💻 Auteur
 
 Alexandre Kegresse  
